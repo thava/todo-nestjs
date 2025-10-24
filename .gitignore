@@ -37,9 +37,13 @@ lerna-debug.log*
 # Environment variables
 .env
 .env.local
-.env.development
+.env.development.local
 .env.test
 .env.production
+
+# Docker volumes
+postgres_data
+pgadmin_data
 
 # Temp files
 *.swp

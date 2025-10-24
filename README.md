@@ -32,9 +32,88 @@ A production-ready backend providing **user authentication, authorization, and C
 ## Prerequisites
 
 - Node.js 18+ and pnpm
-- PostgreSQL 14+ running locally or remotely
+- Docker and Docker Compose (recommended for development)
+- OR PostgreSQL 14+ running locally
 
-## Quick Start
+## Quick Start with Docker (Recommended)
+
+### 1. Install Dependencies
+
+```bash
+pnpm install
+```
+
+### 2. Start PostgreSQL with Docker Compose
+
+```bash
+# Start PostgreSQL and pgAdmin
+docker-compose up -d
+
+# Check if containers are running
+docker-compose ps
+```
+
+This will start:
+- **PostgreSQL** on `localhost:5432`
+- **pgAdmin** (web UI) on `http://localhost:5050`
+  - Email: `admin@todo.local`
+  - Password: `admin`
+
+### 3. Environment Variables
+
+The project includes a `.env.development` file pre-configured for Docker. You can use it as-is:
+
+```bash
+# Use the development environment (already configured)
+# The .env file is already set up with Docker database credentials
+```
+
+Or create your own `.env.local`:
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your configuration
+```
+
+### 4. Run Database Migrations
+
+```bash
+# Apply database migrations
+pnpm run migration:run
+```
+
+### 5. Start Development Server
+
+```bash
+# Watch mode with hot reload
+pnpm run start:dev
+```
+
+The API will be available at `http://localhost:3000`
+
+### 6. Test the API
+
+```bash
+# Check health
+curl http://localhost:3000/health
+
+# Check database connectivity
+curl http://localhost:3000/readiness
+```
+
+### 7. Stop Docker Containers
+
+```bash
+# Stop containers
+docker-compose down
+
+# Stop and remove volumes (deletes all data)
+docker-compose down -v
+```
+
+## Quick Start without Docker
+
+If you prefer to use a local PostgreSQL installation:
 
 ### 1. Install Dependencies
 
@@ -44,37 +123,22 @@ pnpm install
 
 ### 2. Set Up Environment Variables
 
-Copy the example environment file:
-
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local` with your configuration:
+Edit `.env.local` with your database credentials:
 
 ```env
-# Database
 DATABASE_URL=postgresql://user:password@localhost:5432/todo_nestjs
-
-# JWT Secrets (generate secure random strings)
 JWT_ACCESS_SECRET=your-256-bit-secret-here
 JWT_REFRESH_SECRET=your-256-bit-secret-here
-
-# Email Provider (choose SendGrid or SMTP)
-SENDGRID_API_KEY=your-sendgrid-api-key
-# OR
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=your-smtp-user
-SMTP_PASS=your-smtp-password
 ```
 
-### 3. Run Database Migrations
-
-Make sure PostgreSQL is running and the database exists:
+### 3. Create Database and Run Migrations
 
 ```bash
-# Create database (if needed)
+# Create database
 createdb todo_nestjs
 
 # Run migrations
@@ -84,11 +148,8 @@ pnpm run migration:run
 ### 4. Start Development Server
 
 ```bash
-# Watch mode with hot reload
 pnpm run start:dev
 ```
-
-The API will be available at `http://localhost:3000`
 
 ## Database Management
 
