@@ -14,6 +14,7 @@ import { users, refreshTokenSessions } from '../../database/schema';
 import { DATABASE_CONNECTION } from '../../database/database.module';
 import { PasswordService } from '../../common/services/password.service';
 import { TokenService } from '../../common/services/jwt.service';
+import { AuditService } from '../audit/audit.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly passwordService: PasswordService,
     private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
+    private readonly auditService: AuditService,
   ) {}
 
   /**
@@ -77,6 +79,15 @@ export class AuthService {
       })
       .returning();
 
+    // Log registration
+    await this.auditService.logAuth(
+      'REGISTER',
+      newUser.id,
+      { email: newUser.email },
+      ipAddress,
+      userAgent,
+    );
+
     // Generate tokens and create session
     return this.createAuthResponse(newUser, userAgent, ipAddress);
   }
@@ -100,6 +111,14 @@ export class AuthService {
     });
 
     if (!user) {
+      // Log failed login attempt
+      await this.auditService.logAuth(
+        'LOGIN_FAILURE',
+        undefined,
+        { email: normalizedEmail, reason: 'user_not_found' },
+        ipAddress,
+        userAgent,
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -110,8 +129,25 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
+      // Log failed login attempt
+      await this.auditService.logAuth(
+        'LOGIN_FAILURE',
+        user.id,
+        { email: user.email, reason: 'invalid_password' },
+        ipAddress,
+        userAgent,
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    // Log successful login
+    await this.auditService.logAuth(
+      'LOGIN_SUCCESS',
+      user.id,
+      { email: user.email },
+      ipAddress,
+      userAgent,
+    );
 
     // Generate tokens and create session
     return this.createAuthResponse(user, userAgent, ipAddress);
@@ -170,6 +206,15 @@ export class AuthService {
       .set({ revokedAt: new Date() })
       .where(eq(refreshTokenSessions.id, session.id));
 
+    // Log token refresh
+    await this.auditService.logAuth(
+      'REFRESH_TOKEN_ROTATED',
+      user.id,
+      { sessionId: session.id },
+      ipAddress,
+      userAgent,
+    );
+
     // Generate new tokens and create new session
     return this.createAuthResponse(user, userAgent, ipAddress);
   }
@@ -177,13 +222,24 @@ export class AuthService {
   /**
    * Logout (revoke refresh token)
    */
-  async logout(refreshToken: string): Promise<void> {
+  async logout(refreshToken: string, userId?: string, ipAddress?: string, userAgent?: string): Promise<void> {
     const tokenHash = this.hashToken(refreshToken);
 
     await this.db
       .update(refreshTokenSessions)
       .set({ revokedAt: new Date() })
       .where(eq(refreshTokenSessions.refreshTokenHash, tokenHash));
+
+    // Log logout
+    if (userId) {
+      await this.auditService.logAuth(
+        'LOGOUT',
+        userId,
+        {},
+        ipAddress,
+        userAgent,
+      );
+    }
   }
 
   /**

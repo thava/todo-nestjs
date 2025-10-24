@@ -57,7 +57,13 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async logout(@Body() refreshTokenDto: RefreshTokenDto): Promise<void> {
-    await this.authService.logout(refreshTokenDto.refreshToken);
+  async logout(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Req() req: Request,
+    @Ip() ip: string,
+  ): Promise<void> {
+    const userAgent = req.headers['user-agent'];
+    // Note: User might not be authenticated for logout, so we don't extract userId
+    await this.authService.logout(refreshTokenDto.refreshToken, undefined, ip, userAgent);
   }
 }
