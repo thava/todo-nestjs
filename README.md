@@ -1,98 +1,269 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Todo NestJS Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-ready backend providing **user authentication, authorization, and CRUD modules** with a ToDo feature, built with NestJS, Drizzle ORM, and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech Stack
 
-## Description
+- **Framework**: NestJS 11
+- **Language**: TypeScript (strict mode)
+- **Database**: PostgreSQL
+- **ORM**: Drizzle ORM with drizzle-kit
+- **APIs**: REST + GraphQL (Apollo Server)
+- **Authentication**: JWT (Access + Refresh tokens)
+- **Password Hashing**: Argon2id
+- **Validation**: class-validator, class-transformer, Zod
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- ✅ User authentication with JWT (access + refresh tokens)
+- ✅ Role-based access control (guest, admin, sysadmin)
+- ✅ Email verification
+- ✅ Password reset flow
+- ✅ Session management with refresh token rotation
+- ✅ Todo CRUD with ownership and RBAC
+- ✅ Audit logging for security events
+- ✅ PostgreSQL with connection pooling
+- ✅ Environment variable validation
+- 🚧 REST API endpoints (coming soon)
+- 🚧 GraphQL API (coming soon)
+- 🚧 Rate limiting (coming soon)
+- 🚧 Email service integration (coming soon)
 
-```bash
-$ pnpm install
-```
+## Prerequisites
 
-## Compile and run the project
+- Node.js 18+ and pnpm
+- PostgreSQL 14+ running locally or remotely
 
-```bash
-# development
-$ pnpm run start
+## Quick Start
 
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
-```
-
-## Run tests
+### 1. Install Dependencies
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+pnpm install
 ```
 
-## Deployment
+### 2. Set Up Environment Variables
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Copy the example environment file:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+cp .env.example .env.local
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Edit `.env.local` with your configuration:
 
-## Resources
+```env
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/todo_nestjs
 
-Check out a few resources that may come in handy when working with NestJS:
+# JWT Secrets (generate secure random strings)
+JWT_ACCESS_SECRET=your-256-bit-secret-here
+JWT_REFRESH_SECRET=your-256-bit-secret-here
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Email Provider (choose SendGrid or SMTP)
+SENDGRID_API_KEY=your-sendgrid-api-key
+# OR
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-smtp-user
+SMTP_PASS=your-smtp-password
+```
 
-## Support
+### 3. Run Database Migrations
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Make sure PostgreSQL is running and the database exists:
 
-## Stay in touch
+```bash
+# Create database (if needed)
+createdb todo_nestjs
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Run migrations
+pnpm run migration:run
+```
+
+### 4. Start Development Server
+
+```bash
+# Watch mode with hot reload
+pnpm run start:dev
+```
+
+The API will be available at `http://localhost:3000`
+
+## Database Management
+
+### Generate New Migration
+
+After modifying schemas in `src/database/schema/`:
+
+```bash
+pnpm run migration:generate
+```
+
+This will create a new migration file in `src/database/migrations/`.
+
+### Run Migrations
+
+Apply pending migrations to the database:
+
+```bash
+pnpm run migration:run
+```
+
+### Push Schema Changes (Development Only)
+
+Push schema changes directly without creating migration files:
+
+```bash
+pnpm run db:push
+```
+
+⚠️ **Warning**: This is for development only and will not create migration files.
+
+### Drizzle Studio (Database GUI)
+
+Launch a web-based database explorer:
+
+```bash
+pnpm run db:studio
+```
+
+Open `https://local.drizzle.studio` in your browser.
+
+## Project Structure
+
+```
+src/
+├── common/               # Shared utilities
+│   ├── config/          # Configuration and env validation
+│   ├── guards/          # Auth guards (RBAC)
+│   ├── decorators/      # Custom decorators
+│   ├── interceptors/    # Request/response interceptors
+│   ├── filters/         # Exception filters
+│   └── pipes/           # Validation pipes
+├── database/            # Database layer
+│   ├── schema/          # Drizzle ORM schemas
+│   └── migrations/      # SQL migration files
+├── modules/             # Feature modules
+│   ├── auth/            # Authentication module
+│   ├── users/           # Users module
+│   ├── todos/           # Todos module
+│   ├── email/           # Email service module
+│   └── audit/           # Audit logging module
+├── app.module.ts        # Root module
+└── main.ts              # Application entry point
+```
+
+## Database Schema
+
+### Tables
+
+- **users**: User accounts with email, password hash, role
+- **refresh_token_sessions**: Active refresh token sessions
+- **password_reset_tokens**: One-time password reset tokens
+- **email_verification_tokens**: Email verification tokens
+- **todos**: Todo items with owner, description, priority, due date
+- **audit_logs**: Security and activity audit trail
+
+### Roles
+
+- `guest`: Regular user (default)
+- `admin`: Can view all todos, manage own
+- `sysadmin`: Full system access
+
+## Scripts
+
+```bash
+# Development
+pnpm run start:dev       # Start with hot reload
+pnpm run start:debug     # Start with debug mode
+
+# Build
+pnpm run build           # Build for production
+pnpm run start:prod      # Run production build
+
+# Testing
+pnpm run test            # Run unit tests
+pnpm run test:watch      # Run tests in watch mode
+pnpm run test:cov        # Run tests with coverage
+pnpm run test:e2e        # Run end-to-end tests
+
+# Code Quality
+pnpm run lint            # Lint and fix code
+pnpm run format          # Format code with Prettier
+
+# Database
+pnpm run migration:generate  # Generate migration from schema
+pnpm run migration:run       # Apply migrations
+pnpm run db:push            # Push schema (dev only)
+pnpm run db:studio          # Launch Drizzle Studio
+```
+
+## Environment Variables
+
+See `.env.example` for all available configuration options.
+
+### Required Variables
+
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_ACCESS_SECRET`: Secret for access tokens
+- `JWT_REFRESH_SECRET`: Secret for refresh tokens
+- `EMAIL_FROM`: Sender email address
+
+### Optional Variables
+
+- `PORT`: Server port (default: 3000)
+- `CORS_ALLOWED_ORIGINS`: Comma-separated allowed origins
+- `ENABLE_DEV_REVERSIBLE_PASSWORDS`: Dev-only reversible password encryption
+- `LOG_LEVEL`: Logging level (error, warn, info, debug)
+
+## Security Features
+
+- **Argon2id** password hashing with configurable parameters
+- **JWT** access tokens (15min) + refresh tokens (7 days)
+- **Refresh token rotation** on every use
+- **Session management** with device tracking
+- **Rate limiting** on sensitive endpoints (coming soon)
+- **Audit logging** for all security events
+- **CORS** configuration for cross-origin requests
+- **Helmet** security headers (coming soon)
+
+## Development Guidelines
+
+### Adding a New Feature Module
+
+1. Generate module: `nest g module modules/feature-name`
+2. Create schema in `src/database/schema/feature-name.schema.ts`
+3. Generate migration: `pnpm run migration:generate`
+4. Apply migration: `pnpm run migration:run`
+5. Implement service, controller, and resolvers
+
+### Password Requirements
+
+- Minimum 8 characters
+- At least 3 of: uppercase, lowercase, number, special character
+- Cannot be same as email
+- Cannot reuse last 3 passwords (coming soon)
+
+## Roadmap
+
+- [ ] Implement authentication endpoints
+- [ ] Implement users module endpoints
+- [ ] Implement todos CRUD endpoints
+- [ ] Add GraphQL API
+- [ ] Add email service (SendGrid/SMTP)
+- [ ] Add rate limiting with Redis
+- [ ] Add password history tracking
+- [ ] Implement OAuth providers (Google, Microsoft)
+- [ ] Add health check endpoints
+- [ ] Add Prometheus metrics
+- [ ] Set up CI/CD pipeline
+- [ ] Add comprehensive test suite
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED
+
+## Support
+
+For detailed requirements and architecture decisions, see [CLAUDE.md](./CLAUDE.md).
