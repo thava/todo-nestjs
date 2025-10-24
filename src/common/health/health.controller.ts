@@ -1,10 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
-import { DatabaseService } from '../../database/database.service';
+import { Controller, Get, Inject } from '@nestjs/common';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { sql } from 'drizzle-orm';
+import { DATABASE_CONNECTION } from '../../database/database.module';
 import { Public } from '../decorators/public.decorator';
+import * as schema from '../../database/schema';
 
 @Controller()
 export class HealthController {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    @Inject(DATABASE_CONNECTION)
+    private readonly db: PostgresJsDatabase<typeof schema>,
+  ) {}
 
   @Public()
   @Get('health')
@@ -18,7 +24,13 @@ export class HealthController {
   @Public()
   @Get('readiness')
   async readiness() {
-    const dbHealthy = await this.databaseService.healthCheck();
+    let dbHealthy = false;
+    try {
+      const result = await this.db.execute(sql`SELECT 1 as health`);
+      dbHealthy = result.length > 0;
+    } catch (error) {
+      console.error('Database health check failed:', error);
+    }
 
     return {
       status: dbHealthy ? 'ok' : 'degraded',
