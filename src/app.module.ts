@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import configuration from './common/config/configuration';
 import { validate } from './common/config/env.validation';
+import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { validate } from './common/config/env.validation';
       validate,
       envFilePath: ['.env.local', '.env'],
     }),
+    DatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],
