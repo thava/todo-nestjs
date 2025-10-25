@@ -9,7 +9,7 @@ export interface AuditLogData {
   action: string;
   entityType?: string;
   entityId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   ipAddress?: string;
   userAgent?: string;
 }
@@ -47,7 +47,7 @@ export class AuditService {
   async logAuth(
     action: 'LOGIN_SUCCESS' | 'LOGIN_FAILURE' | 'REGISTER' | 'LOGOUT' | 'REFRESH_TOKEN_USED' | 'REFRESH_TOKEN_ROTATED',
     userId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<void> {
@@ -68,7 +68,7 @@ export class AuditService {
     action: 'TODO_CREATED' | 'TODO_UPDATED' | 'TODO_DELETED' | 'TODO_VIEWED',
     userId: string,
     todoId: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<void> {
@@ -91,7 +91,7 @@ export class AuditService {
     userId: string,
     entityType: string,
     entityId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<void> {
@@ -114,7 +114,7 @@ export class AuditService {
     action: string,
     entityType: string,
     entityId?: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
     ipAddress?: string,
     userAgent?: string,
   ): Promise<void> {
