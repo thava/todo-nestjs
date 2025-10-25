@@ -49,3 +49,7 @@ pgadmin_data
 *.swp
 *.swo
 *~
+debug/
+
+# Development utilities
+.dev-tokens.json
