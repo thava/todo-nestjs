@@ -56,7 +56,7 @@ describe('Application (e2e)', () => {
     let accessToken: string;
     let refreshToken: string;
     const testUser = {
-      email: `test-${Date.now()}@example.com`,
+      email: `test-${Date.now()}@zatvia.com`,
       password: 'Test123!@#',
       fullName: 'Test User',
     };
@@ -153,7 +153,7 @@ describe('Application (e2e)', () => {
     let accessToken: string;
     let todoId: string;
     const testUser = {
-      email: `todo-test-${Date.now()}@example.com`,
+      email: `todo-test-${Date.now()}@zatvia.com`,
       password: 'Test123!@#',
       fullName: 'Todo Test User',
     };

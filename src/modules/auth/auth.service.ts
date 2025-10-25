@@ -24,6 +24,7 @@ import { EmailService } from '../email/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { RegisterResponseDto } from './dto/register-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +45,7 @@ export class AuthService {
     registerDto: RegisterDto,
     userAgent?: string,
     ipAddress?: string,
-  ): Promise<AuthResponseDto> {
+  ): Promise<RegisterResponseDto> {
     const { email, password, fullName } = registerDto;
 
     // Normalize email
@@ -98,8 +99,16 @@ export class AuthService {
     // Send verification email
     await this.sendVerificationEmail(newUser.id, newUser.email, newUser.fullName);
 
-    // Generate tokens and create session
-    return this.createAuthResponse(newUser, userAgent, ipAddress);
+    // Return user info without tokens (email verification required)
+    return {
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        fullName: newUser.fullName,
+        role: newUser.role,
+        emailVerified: false,
+      },
+    };
   }
 
   /**
@@ -148,6 +157,19 @@ export class AuthService {
         userAgent,
       );
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Check if email is verified
+    if (!user.emailVerifiedAt) {
+      // Log failed login attempt due to unverified email
+      await this.auditService.logAuth(
+        'LOGIN_FAILURE',
+        user.id,
+        { email: user.email, reason: 'email_not_verified' },
+        ipAddress,
+        userAgent,
+      );
+      throw new UnauthorizedException('Please verify your email address before logging in');
     }
 
     // Log successful login
@@ -352,25 +374,31 @@ export class AuthService {
 
   /**
    * Verify email with token
+   * Returns a message indicating the result
    */
-  async verifyEmail(token: string): Promise<void> {
+  async verifyEmail(token: string): Promise<{ message: string; alreadyVerified: boolean }> {
     const tokenHash = this.hashToken(token);
 
-    // Find token
+    // First, try to find the token without the verifiedAt filter
     const verificationToken = await this.db.query.emailVerificationTokens.findFirst({
-      where: and(
-        eq(emailVerificationTokens.tokenHash, tokenHash),
-        isNull(emailVerificationTokens.verifiedAt),
-      ),
+      where: eq(emailVerificationTokens.tokenHash, tokenHash),
     });
 
     if (!verificationToken) {
-      throw new BadRequestException('Invalid or expired verification token');
+      throw new BadRequestException('Invalid verification token');
     }
 
-    // Check if expired
+    // Check if expired first (before checking if already verified)
     if (new Date() > verificationToken.expiresAt) {
       throw new BadRequestException('Verification token has expired');
+    }
+
+    // Check if already verified
+    if (verificationToken.verifiedAt) {
+      return {
+        message: 'Email is already verified',
+        alreadyVerified: true,
+      };
     }
 
     // Mark token as used
@@ -384,6 +412,11 @@ export class AuthService {
       .update(users)
       .set({ emailVerifiedAt: new Date() })
       .where(eq(users.id, verificationToken.userId));
+
+    return {
+      message: 'Email verified successfully',
+      alreadyVerified: false,
+    };
   }
 
   /**

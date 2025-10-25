@@ -15,7 +15,7 @@ echo "======================================"
 echo ""
 
 # Generate unique test email
-TEST_EMAIL="test-$(date +%s)@example.com"
+TEST_EMAIL="test-$(date +%s)@zatvia.com"
 TEST_PASSWORD="Test123!@#"
 TEST_NAME="Automation Test User"
 

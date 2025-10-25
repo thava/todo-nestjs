@@ -18,6 +18,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { RequestPasswordResetDto } from './dto/request-password-reset.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
+import { RegisterResponseDto } from './dto/register-response.dto';
 import { GetCurrentUser } from '../../common/decorators/current-user.decorator';
 import type { AccessTokenPayload } from '../../common/services/jwt.service';
 import { Public } from '../../common/decorators/public.decorator';
@@ -33,7 +34,7 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
     @Req() req: Request,
     @Ip() ip: string,
-  ): Promise<AuthResponseDto> {
+  ): Promise<RegisterResponseDto> {
     const userAgent = req.headers['user-agent'];
     return this.authService.register(registerDto, userAgent, ip);
   }
@@ -82,9 +83,8 @@ export class AuthController {
   @Public()
   @Get('verify-email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Query() query: VerifyEmailDto): Promise<{ message: string }> {
-    await this.authService.verifyEmail(query.token);
-    return { message: 'Email verified successfully' };
+  async verifyEmail(@Query() query: VerifyEmailDto): Promise<{ message: string; alreadyVerified: boolean }> {
+    return await this.authService.verifyEmail(query.token);
   }
 
   @Post('resend-verification')
