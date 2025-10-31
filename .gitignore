@@ -54,3 +54,4 @@ debug/
 
 # Development utilities
 .dev-tokens.json
+.claude/*

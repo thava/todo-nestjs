@@ -24,7 +24,10 @@
     "migration:generate": "drizzle-kit generate",
     "migration:run": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:reinit": "npx tsx scripts/utils.ts db:reinit",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",

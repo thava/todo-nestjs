@@ -9,10 +9,16 @@
  *   npx tsx scripts/utils.ts todos:create "Buy groceries" --priority=high --due="2025-12-31"
  *   npx tsx scripts/utils.ts todos:list
  *   npx tsx scripts/utils.ts todos:delete <todo_id>
+ *   npx tsx scripts/utils.ts db:reinit
  */
 
 import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'fs';
 import { resolve } from 'path';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { hash } from '@node-rs/argon2';
+import { sql } from 'drizzle-orm';
+import * as schema from '../src/database/schema/index.js';
 
 // Configuration
 const API_URL = process.env.API_URL || 'http://localhost:3000';
@@ -393,6 +399,96 @@ async function readinessCheck(): Promise<void> {
   }
 }
 
+async function dbReinit(): Promise<void> {
+  printInfo('Starting database reinitialization');
+
+  // Get database connection string from environment
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    printError('DATABASE_URL environment variable not set');
+    process.exit(1);
+  }
+
+  // Create database connection
+  const client = postgres(databaseUrl);
+  const db = drizzle(client, { schema });
+
+  try {
+    // Delete all data from tables (in reverse dependency order)
+    printInfo('Deleting all data from tables...');
+    await db.delete(schema.todos);
+    await db.delete(schema.emailVerificationTokens);
+    await db.delete(schema.passwordResetTokens);
+    await db.delete(schema.refreshTokenSessions);
+    await db.delete(schema.auditLogs);
+    await db.delete(schema.users);
+    printSuccess('All tables cleared');
+
+    // Create test users
+    const testUsers = [
+      { email: 'guest1@example.com', password: 'Guest@123', fullName: 'Guest User 1', role: 'guest' as const },
+      { email: 'admin1@example.com', password: 'Admin@123', fullName: 'Admin User 1', role: 'admin' as const },
+      { email: 'sysadmin1@example.com', password: 'Sysadmin@123', fullName: 'Sysadmin User 1', role: 'sysadmin' as const },
+    ];
+
+    printInfo('Creating test users...');
+    const createdUsers = [];
+
+    for (const userData of testUsers) {
+      // Hash password using Argon2id
+      const passwordHash = await hash(userData.password, {
+        memoryCost: 19456,
+        timeCost: 2,
+        parallelism: 1,
+      });
+
+      // Insert user with email already verified
+      const [user] = await db.insert(schema.users).values({
+        email: userData.email,
+        fullName: userData.fullName,
+        passwordHashPrimary: passwordHash,
+        role: userData.role,
+        emailVerifiedAt: new Date(),
+      }).returning();
+
+      createdUsers.push({ ...user, username: userData.email.split('@')[0] });
+      printSuccess(`Created user: ${userData.email} (${userData.role})`);
+    }
+
+    // Create 3 todos for each user
+    printInfo('Creating todos for each user...');
+    const todoTemplates = [
+      { action: 'to visit dentist', priority: 'high' as const },
+      { action: 'to buy groceries', priority: 'medium' as const },
+      { action: 'to finish project', priority: 'low' as const },
+    ];
+
+    for (const user of createdUsers) {
+      for (const template of todoTemplates) {
+        await db.insert(schema.todos).values({
+          ownerId: user.id,
+          description: `${user.username} ${template.action}`,
+          priority: template.priority,
+        });
+      }
+      printSuccess(`Created 3 todos for ${user.email}`);
+    }
+
+    printSuccess('Database reinitialization completed successfully');
+    printInfo('\nTest accounts created:');
+    printInfo('  guest1@example.com / Guest@123 (role: guest)');
+    printInfo('  admin1@example.com / Admin@123 (role: admin)');
+    printInfo('  sysadmin1@example.com / Sysadmin@123 (role: sysadmin)');
+    printInfo('\n9 todos created (3 per user)');
+
+  } catch (error) {
+    printError(`Database reinitialization failed: ${error}`);
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
 // Parse command line arguments
 function parseArgs(args: string[]): Record<string, string> {
   const parsed: Record<string, string> = {};
@@ -438,6 +534,9 @@ ${colors.green}Health:${colors.reset}
 
 ${colors.green}Token Management:${colors.reset}
   tokens:clear                            - Delete token file
+
+${colors.green}Database Management:${colors.reset}
+  db:reinit                               - Reinitialize database with test data
 
 ${colors.green}Examples:${colors.reset}
   npx tsx scripts/utils.ts register test@example.com password123 "Test User"
@@ -553,6 +652,11 @@ async function main(): Promise<void> {
       // Token management
       case 'tokens:clear':
         clearTokens();
+        break;
+
+      // Database management
+      case 'db:reinit':
+        await dbReinit();
         break;
 
       default:
