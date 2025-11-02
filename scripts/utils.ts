@@ -12,13 +12,26 @@
  *   npx tsx scripts/utils.ts db:reinit
  */
 
+import { config } from 'dotenv';
 import { writeFileSync, readFileSync, existsSync, unlinkSync } from 'fs';
-import { resolve } from 'path';
-import postgres from 'postgres';
+import { resolve, dirname } from 'path';
+import * as postgresImport from 'postgres';
+const postgres = (postgresImport as any).default || postgresImport;
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { hash } from '@node-rs/argon2';
 import { sql } from 'drizzle-orm';
 import * as schema from '../src/database/schema/index.js';
+
+// Load .env file from root directory
+const __dirname = process.cwd();
+const envPath = resolve(__dirname, '.env');
+
+if (existsSync(envPath)) {
+  config({ path: envPath });
+  console.log(`✓ Loaded environment variables from ${envPath}`);
+} else {
+  console.log(`⚠ No .env file found at ${envPath}, using existing environment variables`);
+}
 
 // Configuration
 const API_URL = process.env.API_URL || 'http://localhost:3000';
@@ -432,7 +445,7 @@ async function dbReinit(): Promise<void> {
     ];
 
     printInfo('Creating test users...');
-    const createdUsers = [];
+    const createdUsers: Array<{ id: string; email: string; username: string }> = [];
 
     for (const userData of testUsers) {
       // Hash password using Argon2id
